@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dek-D Backend Homework</title>
+    <style>@import "style.css";</style>
+</head>
+
+<body onload="titleValidate(); contentValidate();">
+    <div id="main">
+        <div id="header">ตั้งกระทู้ใหม่</div>
+        <div id="forumBody">
+            <form name="myForm">
+                หัวข้อกระทู้
+                <div id="titleCount" class="message" style="display: inline; margin-left: 7px;"></div>
+                <div id="titleMessage" class="message" style="display: inline"></div><br>
+                <div id="titleDisplay"><input type="text" id="title" name="title" oninput=titleValidate()><br></div>
+                เนื้อหา
+                <div id="contentCount" class="message" style="display: inline; margin-left: 7px;"></div>
+                <div id="contentMessage" class="message" style="display: inline"></div><br>
+                <div id="contentDisplay"><textarea id="content" name="content" style="white-space: pre-line;" oninput=contentValidate()></textarea></div>
+                <div id="submitButton" style="text-align: center"><input type="button" value="ดูตัวอย่างกระทู้" onclick="return submitValidate()"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function titleValidate(){
+            var title = document.getElementById("title").value.trim();
+            var regEx = /<([^>]+)>/ig;
+            var count = 140 - title.length;
+            if( (title.length<4 || title.length>140) && regEx.test(title)==true ){
+                var message = "[หัวข้อกระทู้ต้องมีความยาว 4-140 ตัวอักษร และไม่มี HTML]"
+                document.getElementById("titleCount").style.color = "red";
+            }
+            else if( title.length<4 || title.length>140 ){
+                var message = "[หัวข้อกระทู้ต้องมีความยาว 4-140 ตัวอักษร]"
+                document.getElementById("titleCount").style.color = "red";
+            }
+            else if( regEx.test(title)==true ){
+                var message = "[หัวข้อกระทู้ต้องไม่มี HTML]"
+                document.getElementById("titleCount").style.color = "red";
+            }
+            else{
+                var message = "";
+                document.getElementById("titleCount").style.color = "green";
+            }
+            document.getElementById("titleCount").innerHTML = count;
+            document.getElementById("titleMessage").innerHTML = message;
+        }
+
+        function contentValidate(){
+            var content = document.getElementById("content").value.trim();
+            var count = 2000 - content.length;
+            if( content.length<6 || content.length>2000 ){
+                var message = "[เนื้อหากระทู้ต้องมีความยาว 6-2000 ตัวอักษร]"
+                document.getElementById("contentCount").style.color = "red";
+            }
+            else{
+                var message = "";
+                document.getElementById("contentCount").style.color = "green";
+            }
+            document.getElementById("contentCount").innerHTML = count;
+            document.getElementById("contentMessage").innerHTML = message;
+        }
+
+        function submitValidate(){
+            var title = document.getElementById("title").value.trim();
+            var content = document.getElementById("content").value.trim();
+            var regEx = /<([^>]+)>/ig;
+            if( title.length<4 || title.length>140 || regEx.test(title)==true || content.length<6 || content.length>2000 ){
+                return false;
+            }
+            else{
+                connect();
+            }
+        }
+
+        function connect(){
+                var xmlhttp = new XMLHttpRequest();
+                var title = document.getElementById("title").value.trim();
+                var content = document.getElementById("content").value.trim();
+                var url = location.protocol+'//'+location.host+"/Dek-DBackend/forum-link.php";
+                
+                xmlhttp.onreadystatechange=function() {
+                    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        response();
+                    }
+                }
+                xmlhttp.open("POST", url, true);
+                xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xmlhttp.send("title="+title+"&content="+content);
+        }
+
+        function response(){
+                var xmlhttp = new XMLHttpRequest();
+                var title = document.getElementById("title").value.trim();
+                var content = document.getElementById("content").value.trim();
+                var url = location.protocol+'//'+location.host+"/Dek-DBackend/forum-link.php";
+                
+                xmlhttp.onreadystatechange=function() {
+                    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        output = JSON.parse(xmlhttp.responseText);
+                        document.getElementById("header").innerHTML = "ตัวอย่างกระทู้";
+                        document.getElementById("titleDisplay").innerHTML = "<div id='title' style='border: 1px solid grey'>"+output[0].title+"</div>";
+                        document.getElementById("contentDisplay").innerHTML = "<div id='content' style='border: 1px solid grey'>"+output[0].content+"</div>";
+                        document.getElementById("titleCount").style.display = "none";
+                        document.getElementById("contentCount").style.display = "none";
+                        document.getElementById("submitButton").style.display = "none";
+                    }
+                }
+                xmlhttp.open("POST", url, true);
+                xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xmlhttp.send("title="+title+"&content="+content);
+        }
+    </script>
+</body>
+
+</html>
